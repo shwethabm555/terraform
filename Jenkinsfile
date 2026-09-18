@@ -85,5 +85,16 @@ pipeline {
         }
     }
 }
+
+stage('Terraform Plan After Import') {
+    steps {
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-terraform'
+        ]]) {
+            bat 'terraform plan'
+        }
+    }
+}
     }
 }
