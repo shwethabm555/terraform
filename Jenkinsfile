@@ -52,6 +52,23 @@ pipeline {
                 }
             }
         }
+	
+	stage('Import Existing EKS and NLB Resources') {
+    steps {
+        withCredentials([[
+            $class: 'AmazonWebServicesCredentialsBinding',
+            credentialsId: 'aws-terraform'
+        ]]) {
+            bat '''
+                terraform import aws_eks_cluster.main terraform-assignment-eks
+
+                terraform import aws_lb.nlb arn:aws:elasticloadbalancing:us-east-1:880884391427:loadbalancer/net/terraform-assignment-nlb/28f4af332da87e7d
+
+                terraform import aws_lb_target_group.web arn:aws:elasticloadbalancing:us-east-1:880884391427:targetgroup/terraform-assignment-web-tg/8e091ac1108c3aa3
+            '''
+        }
+    }
+}
 
         stage('Terraform Validate') {
             steps {
