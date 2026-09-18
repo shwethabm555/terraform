@@ -70,23 +70,7 @@ pipeline {
             }
         }
 
-        stage('Import Existing Resources') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-terraform'
-        ]]) {
-            bat '''
-                terraform import aws_iam_role.eks_cluster terraform-assignment-eks-cluster-role
-                terraform import aws_iam_role.eks_node terraform-assignment-eks-node-role
-                terraform import aws_lb.nlb arn:aws:elasticloadbalancing:us-east-1:880884391427:loadbalancer/net/terraform-assignment-nlb/28f4af332da87e7d
-                terraform import aws_lb_target_group.web arn:aws:elasticloadbalancing:us-east-1:880884391427:targetgroup/terraform-assignment-web-tg/8e091ac1108c3aa3
-            '''
-        }
-    }
-}
-
-stage('Terraform Plan After Import') {
+        stage('Terraform Plan After Import') {
     steps {
         withCredentials([[
             $class: 'AmazonWebServicesCredentialsBinding',
