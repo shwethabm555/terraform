@@ -19,35 +19,15 @@ pipeline {
             }
         }
 
-        stage('Terraform Init') {
+        stage('Stop EKS Nodes') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-terraform'
                 ]]) {
-                    bat 'terraform init'
-                }
-            }
-        }
-
-        stage('Terraform Plan Destroy') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-terraform'
-                ]]) {
-                    bat 'terraform plan -destroy'
-                }
-            }
-        }
-
-        stage('Terraform Destroy') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-terraform'
-                ]]) {
-                    bat 'terraform destroy -auto-approve'
+                    bat '''
+                        aws ec2 stop-instances --instance-ids i-04366987b0a925d21 i-086cac86458c942ae --region us-east-1
+                    '''
                 }
             }
         }
