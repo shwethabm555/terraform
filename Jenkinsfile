@@ -19,14 +19,14 @@ pipeline {
             }
         }
 
-        stage('Stop EKS Nodes') {
+        stage('Delete EKS Node Group') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-terraform'
                 ]]) {
                     bat '''
-                        aws ec2 stop-instances --instance-ids i-04366987b0a925d21 i-086cac86458c942ae --region us-east-1
+                        aws eks delete-nodegroup --cluster-name terraform-assignment-eks --nodegroup-name terraform-assignment-eks-nodes --region us-east-1
                     '''
                 }
             }
