@@ -19,29 +19,6 @@ pipeline {
             }
         }
 
-        stage('Check Existing AWS Resources') {
-            steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-terraform'
-                ]]) {
-                    bat '''
-                        echo === IAM CLUSTER ROLE ===
-                        aws iam get-role --role-name terraform-assignment-eks-cluster-role --query "Role.Arn" --output text
-
-                        echo === IAM NODE ROLE ===
-                        aws iam get-role --role-name terraform-assignment-eks-node-role --query "Role.Arn" --output text
-
-                        echo === NLB ===
-                        aws elbv2 describe-load-balancers --names terraform-assignment-nlb --query "LoadBalancers[0].LoadBalancerArn" --output text
-
-                        echo === TARGET GROUP ===
-                        aws elbv2 describe-target-groups --names terraform-assignment-web-tg --query "TargetGroups[0].TargetGroupArn" --output text
-                    '''
-                }
-            }
-        }
-
         stage('Terraform Init') {
             steps {
                 withCredentials([[
@@ -52,61 +29,27 @@ pipeline {
                 }
             }
         }
-	
-	stage('Import Existing EKS and NLB Resources') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-terraform'
-        ]]) {
-            bat '''
-                terraform import aws_eks_cluster.main terraform-assignment-eks
 
-                terraform import aws_lb.nlb arn:aws:elasticloadbalancing:us-east-1:880884391427:loadbalancer/net/terraform-assignment-nlb/28f4af332da87e7d
-
-                terraform import aws_lb_target_group.web arn:aws:elasticloadbalancing:us-east-1:880884391427:targetgroup/terraform-assignment-web-tg/8e091ac1108c3aa3
-            '''
-        }
-    }
-}
-
-        stage('Terraform Validate') {
-            steps {
-                bat 'terraform validate'
-            }
-        }
-
-        stage('Terraform Plan') {
+        stage('Terraform Plan Destroy') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-terraform'
                 ]]) {
-                    bat 'terraform plan'
+                    bat 'terraform plan -destroy'
                 }
             }
         }
 
-        stage('Terraform Plan After Import') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-terraform'
-        ]]) {
-            bat 'terraform plan'
+        stage('Terraform Destroy') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-terraform'
+                ]]) {
+                    bat 'terraform destroy -auto-approve'
+                }
+            }
         }
-    }
-}
-
-stage('Terraform Apply') {
-    steps {
-        withCredentials([[
-            $class: 'AmazonWebServicesCredentialsBinding',
-            credentialsId: 'aws-terraform'
-        ]]) {
-            bat 'terraform apply -auto-approve'
-        }
-    }
-}
     }
 }
