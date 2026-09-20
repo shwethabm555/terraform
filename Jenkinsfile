@@ -19,14 +19,14 @@ pipeline {
             }
         }
 
-        stage('Delete EKS Node Group') {
+        stage('Delete EKS Cluster') {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-terraform'
                 ]]) {
                     bat '''
-                        aws eks delete-nodegroup --cluster-name terraform-assignment-eks --nodegroup-name terraform-assignment-eks-nodes --region us-east-1
+                        aws eks delete-cluster --name terraform-assignment-eks --region us-east-1
                     '''
                 }
             }
